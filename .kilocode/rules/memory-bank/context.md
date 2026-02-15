@@ -37,6 +37,8 @@ The application is a full-featured Arabic RTL employee management system for tra
 - [x] Detailed probation evaluation form with task performance, department & supervisor evaluation
 - [x] User settings in sidebar - users can set their name and department
 - [x] Separate admin and user views with role-based filtering
+- [x] Fixed auth context SSR issues - created providers.tsx client wrapper component
+- [x] Fixed client-side runtime errors with useSyncExternalStore and localStorage access
 
 ## Current Structure
 
@@ -98,3 +100,4 @@ The application is a full-featured Arabic RTL employee management system for tra
 | 2026-02-15 | Built complete employee probation & contract management system with Arabic RTL UI |
 | 2026-02-15 | Added role-based auth, delete buttons (admin only), refactored pages to use client table components |
 | 2026-02-15 | Added user permissions panel, department-based filtering, detailed probation evaluation with task performance |
+| 2026-02-15 | Fixed auth context SSR issues and client-side runtime errors with useSyncExternalStore and localStorage access |
