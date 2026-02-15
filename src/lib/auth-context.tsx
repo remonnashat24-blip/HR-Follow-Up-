@@ -4,6 +4,12 @@ import { createContext, useContext, useState, useCallback, useSyncExternalStore,
 
 export type UserRole = "admin" | "user";
 
+export interface AuthState {
+  role: UserRole;
+  userName: string;
+  permissions: UserPermissions;
+}
+
 export interface UserPermissions {
   userName: string;
   department: string | null; // null means all departments
@@ -87,7 +93,7 @@ function subscribe(listener: () => void) {
   };
 }
 
-function getSnapshot(): { role: UserRole; userName: string; permissions: UserPermissions } {
+function getSnapshot(): AuthState {
   return {
     role: getStoredRole(),
     userName: getStoredUserName(),
@@ -95,7 +101,7 @@ function getSnapshot(): { role: UserRole; userName: string; permissions: UserPer
   };
 }
 
-function getServerSnapshot(): { role: UserRole; userName: string; permissions: UserPermissions } {
+function getServerSnapshot(): AuthState {
   return { role: "user", userName: "مستخدم", permissions: defaultPermissions };
 }
 
@@ -107,18 +113,24 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   );
 
   const setRole = useCallback((newRole: UserRole) => {
-    localStorage.setItem("userRole", newRole);
-    listeners.forEach((listener) => listener());
+    if (typeof window !== "undefined") {
+      localStorage.setItem("userRole", newRole);
+      listeners.forEach((listener) => listener());
+    }
   }, []);
 
   const setUserName = useCallback((name: string) => {
-    localStorage.setItem("userName", name);
-    listeners.forEach((listener) => listener());
+    if (typeof window !== "undefined") {
+      localStorage.setItem("userName", name);
+      listeners.forEach((listener) => listener());
+    }
   }, []);
 
   const setPermissions = useCallback((perms: UserPermissions) => {
-    localStorage.setItem("userPermissions", JSON.stringify(perms));
-    listeners.forEach((listener) => listener());
+    if (typeof window !== "undefined") {
+      localStorage.setItem("userPermissions", JSON.stringify(perms));
+      listeners.forEach((listener) => listener());
+    }
   }, []);
 
   return (
