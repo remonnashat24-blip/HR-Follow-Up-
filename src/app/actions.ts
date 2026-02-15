@@ -23,6 +23,7 @@ export async function createEmployee(data: {
   phone?: string;
   department?: string;
   position?: string;
+  directManager?: string;
   hireDate: string;
 }) {
   await db.insert(employees).values(data);
@@ -63,6 +64,7 @@ export async function getProbationPeriods() {
       employeeNumber: employees.employeeNumber,
       department: employees.department,
       position: employees.position,
+      directManager: employees.directManager,
       startDate: probationPeriods.startDate,
       endDate: probationPeriods.endDate,
       durationMonths: probationPeriods.durationMonths,
@@ -112,6 +114,7 @@ export async function getContracts() {
       employeeName: employees.name,
       employeeNumber: employees.employeeNumber,
       department: employees.department,
+      directManager: employees.directManager,
       contractNumber: contracts.contractNumber,
       contractType: contracts.contractType,
       startDate: contracts.startDate,
@@ -226,6 +229,42 @@ export async function getUrgentContracts() {
   );
 }
 
+// ============ DELETE OPERATIONS ============
+
+export async function deleteProbation(id: number) {
+  await db.delete(probationPeriods).where(eq(probationPeriods.id, id));
+  revalidatePath("/probation");
+  revalidatePath("/");
+}
+
+export async function deleteContract(id: number) {
+  await db.delete(contracts).where(eq(contracts.id, id));
+  revalidatePath("/contracts");
+  revalidatePath("/");
+}
+
+export async function deleteAllEmployees() {
+  await db.delete(probationPeriods);
+  await db.delete(contracts);
+  await db.delete(employees);
+  revalidatePath("/employees");
+  revalidatePath("/probation");
+  revalidatePath("/contracts");
+  revalidatePath("/");
+}
+
+export async function deleteAllProbations() {
+  await db.delete(probationPeriods);
+  revalidatePath("/probation");
+  revalidatePath("/");
+}
+
+export async function deleteAllContracts() {
+  await db.delete(contracts);
+  revalidatePath("/contracts");
+  revalidatePath("/");
+}
+
 // ============ IMPORT DATA ============
 
 export type ImportRow = {
@@ -234,6 +273,7 @@ export type ImportRow = {
   location?: string;
   department?: string;
   jobTitle?: string;
+  directManager?: string;
   socialSecurityNumber?: string;
   hireDate: string;
   contractDuration?: number;
@@ -284,6 +324,7 @@ export async function importExcelData(rows: ImportRow[]) {
               location: row.location,
               department: row.department,
               position: row.jobTitle,
+              directManager: row.directManager,
               socialSecurityNumber: row.socialSecurityNumber,
               hireDate: row.hireDate,
               status: "active",
