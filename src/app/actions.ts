@@ -229,6 +229,42 @@ export async function getUrgentContracts() {
   );
 }
 
+// ============ DELETE OPERATIONS ============
+
+export async function deleteProbation(id: number) {
+  await db.delete(probationPeriods).where(eq(probationPeriods.id, id));
+  revalidatePath("/probation");
+  revalidatePath("/");
+}
+
+export async function deleteContract(id: number) {
+  await db.delete(contracts).where(eq(contracts.id, id));
+  revalidatePath("/contracts");
+  revalidatePath("/");
+}
+
+export async function deleteAllEmployees() {
+  await db.delete(probationPeriods);
+  await db.delete(contracts);
+  await db.delete(employees);
+  revalidatePath("/employees");
+  revalidatePath("/probation");
+  revalidatePath("/contracts");
+  revalidatePath("/");
+}
+
+export async function deleteAllProbations() {
+  await db.delete(probationPeriods);
+  revalidatePath("/probation");
+  revalidatePath("/");
+}
+
+export async function deleteAllContracts() {
+  await db.delete(contracts);
+  revalidatePath("/contracts");
+  revalidatePath("/");
+}
+
 // ============ IMPORT DATA ============
 
 export type ImportRow = {

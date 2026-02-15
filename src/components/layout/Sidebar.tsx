@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useAuth } from "@/lib/auth-context";
 
 const navItems = [
   { href: "/", label: "لوحة التحكم", icon: "📊" },
@@ -13,6 +14,7 @@ const navItems = [
 
 export function Sidebar() {
   const pathname = usePathname();
+  const { role, setRole, isAdmin } = useAuth();
 
   return (
     <aside className="w-64 bg-white border-l border-gray-200 shadow-sm flex flex-col">
@@ -39,7 +41,32 @@ export function Sidebar() {
           );
         })}
       </nav>
-      <div className="p-4 border-t border-gray-200">
+      <div className="p-4 border-t border-gray-200 space-y-3">
+        <div className="bg-gray-50 rounded-lg p-3">
+          <p className="text-xs font-medium text-gray-500 mb-2">الصلاحية</p>
+          <div className="flex gap-1">
+            <button
+              onClick={() => setRole("admin")}
+              className={`flex-1 text-xs px-2 py-1.5 rounded-md font-medium transition-colors ${
+                isAdmin
+                  ? "bg-red-600 text-white"
+                  : "bg-white text-gray-600 border border-gray-200 hover:bg-gray-100"
+              }`}
+            >
+              🔑 مدير
+            </button>
+            <button
+              onClick={() => setRole("user")}
+              className={`flex-1 text-xs px-2 py-1.5 rounded-md font-medium transition-colors ${
+                !isAdmin
+                  ? "bg-blue-600 text-white"
+                  : "bg-white text-gray-600 border border-gray-200 hover:bg-gray-100"
+              }`}
+            >
+              👤 مستخدم
+            </button>
+          </div>
+        </div>
         <p className="text-xs text-gray-400 text-center">© 2026 نظام إدارة الموظفين</p>
       </div>
     </aside>
