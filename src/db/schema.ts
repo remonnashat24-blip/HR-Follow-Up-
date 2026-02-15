@@ -6,8 +6,10 @@ export const employees = sqliteTable("employees", {
   name: text("name").notNull(),
   email: text("email"),
   phone: text("phone"),
+  location: text("location"),
   department: text("department"),
   position: text("position"),
+  socialSecurityNumber: text("social_security_number"),
   hireDate: text("hire_date").notNull(),
   status: text("status").notNull().default("active"), // active, inactive, terminated
   createdAt: integer("created_at", { mode: "timestamp" }).$defaultFn(() => new Date()),
@@ -39,6 +41,7 @@ export const contracts = sqliteTable("contracts", {
   endDate: text("end_date"),
   durationMonths: integer("duration_months"),
   salary: integer("salary"),
+  contractSequence: integer("contract_sequence").default(1),
   status: text("status").notNull().default("active"), // active, expired, renewed, terminated
   renewalNotes: text("renewal_notes"),
   createdAt: integer("created_at", { mode: "timestamp" }).$defaultFn(() => new Date()),

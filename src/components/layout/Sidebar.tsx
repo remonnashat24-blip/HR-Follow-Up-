@@ -8,6 +8,7 @@ const navItems = [
   { href: "/employees", label: "الموظفين", icon: "👥" },
   { href: "/probation", label: "فترة الاختبار", icon: "⏳" },
   { href: "/contracts", label: "العقود", icon: "📄" },
+  { href: "/import", label: "استيراد البيانات", icon: "📥" },
 ];
 
 export function Sidebar() {

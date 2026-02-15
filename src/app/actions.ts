@@ -225,3 +225,101 @@ export async function getUrgentContracts() {
     (c) => c.status === "active" && c.endDate && c.endDate <= thirtyDaysFromNow && c.endDate >= today
   );
 }
+
+// ============ IMPORT DATA ============
+
+export type ImportRow = {
+  employeeCode: string;
+  name: string;
+  location?: string;
+  department?: string;
+  jobTitle?: string;
+  socialSecurityNumber?: string;
+  hireDate: string;
+  contractDuration?: number;
+  contractStartDate: string;
+  contractEndDate?: string;
+  contractSequence?: number;
+  gapStartDate?: string;
+  gapEndDate?: string;
+};
+
+export async function importExcelData(rows: ImportRow[]) {
+  const results = {
+    employeesCreated: 0,
+    contractsCreated: 0,
+    errors: [] as string[],
+  };
+
+  // Track employees by code to handle gaps between contracts
+  const employeeMap = new Map<string, number>();
+
+  for (const row of rows) {
+    try {
+      // Validate required fields
+      if (!row.employeeCode || !row.name || !row.hireDate) {
+        results.errors.push(`Missing required fields for row: ${row.employeeCode || row.name}`);
+        continue;
+      }
+
+      // Check if employee already exists
+      let employeeId = employeeMap.get(row.employeeCode);
+      
+      if (!employeeId) {
+        const existingEmployee = await db
+          .select()
+          .from(employees)
+          .where(eq(employees.employeeNumber, row.employeeCode));
+
+        if (existingEmployee.length > 0) {
+          employeeId = existingEmployee[0].id;
+          employeeMap.set(row.employeeCode, employeeId);
+        } else {
+          // Create new employee
+          const insertResult = await db
+            .insert(employees)
+            .values({
+              employeeNumber: row.employeeCode,
+              name: row.name,
+              location: row.location,
+              department: row.department,
+              position: row.jobTitle,
+              socialSecurityNumber: row.socialSecurityNumber,
+              hireDate: row.hireDate,
+              status: "active",
+            })
+            .returning({ id: employees.id });
+
+          employeeId = insertResult[0].id;
+          employeeMap.set(row.employeeCode, employeeId);
+          results.employeesCreated++;
+        }
+      }
+
+      // Create contract if contract dates are provided
+      if (row.contractStartDate) {
+        const contractNumber = `${row.employeeCode}-${row.contractSequence || 1}`;
+        
+        await db.insert(contracts).values({
+          employeeId,
+          contractNumber,
+          contractType: row.contractEndDate ? "fixed" : "indefinite",
+          startDate: row.contractStartDate,
+          endDate: row.contractEndDate,
+          durationMonths: row.contractDuration,
+          contractSequence: row.contractSequence || 1,
+          status: row.contractEndDate && new Date(row.contractEndDate) < new Date() ? "expired" : "active",
+        });
+        results.contractsCreated++;
+      }
+    } catch (error) {
+      results.errors.push(`Error processing row ${row.employeeCode}: ${error}`);
+    }
+  }
+
+  revalidatePath("/employees");
+  revalidatePath("/contracts");
+  revalidatePath("/");
+
+  return results;
+}
