@@ -5,22 +5,8 @@
     {
       "idx": 0,
       "version": "6",
-      "when": 1771186018421,
-      "tag": "0000_dusty_tarot",
-      "breakpoints": true
-    },
-    {
-      "idx": 1,
-      "version": "6",
-      "when": 1779186018421,
-      "tag": "0001_cheerful_tony_stark",
-      "breakpoints": true
-    },
-    {
-      "idx": 2,
-      "version": "6",
-      "when": 1779186018422,
-      "tag": "0002_awesome_wong",
+      "when": 1771191929031,
+      "tag": "0000_brown_alex_wilder",
       "breakpoints": true
     }
   ]

@@ -1,1 +1,0 @@
-ALTER TABLE `employees` ADD `direct_manager` text;
