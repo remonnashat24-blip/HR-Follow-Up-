@@ -54,6 +54,9 @@ export default async function ProbationPage() {
                     الموظف
                   </th>
                   <th className="text-right px-4 py-3 text-xs font-medium text-gray-500 uppercase">
+                    المدير المباشر
+                  </th>
+                  <th className="text-right px-4 py-3 text-xs font-medium text-gray-500 uppercase">
                     القسم
                   </th>
                   <th className="text-right px-4 py-3 text-xs font-medium text-gray-500 uppercase">
@@ -84,6 +87,9 @@ export default async function ProbationPage() {
                       <td className="px-4 py-3">
                         <p className="text-sm font-medium">{p.employeeName}</p>
                         <p className="text-xs text-gray-500">{p.employeeNumber}</p>
+                      </td>
+                      <td className="px-4 py-3 text-sm text-gray-600">
+                        {p.directManager || "-"}
                       </td>
                       <td className="px-4 py-3 text-sm text-gray-600">
                         {p.department || "-"}

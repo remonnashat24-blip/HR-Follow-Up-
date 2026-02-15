@@ -55,6 +55,9 @@ export default async function ContractsPage() {
                     الموظف
                   </th>
                   <th className="text-right px-4 py-3 text-xs font-medium text-gray-500 uppercase">
+                    المدير المباشر
+                  </th>
+                  <th className="text-right px-4 py-3 text-xs font-medium text-gray-500 uppercase">
                     رقم العقد
                   </th>
                   <th className="text-right px-4 py-3 text-xs font-medium text-gray-500 uppercase">
@@ -88,6 +91,9 @@ export default async function ContractsPage() {
                       <td className="px-4 py-3">
                         <p className="text-sm font-medium">{c.employeeName}</p>
                         <p className="text-xs text-gray-500">{c.department}</p>
+                      </td>
+                      <td className="px-4 py-3 text-sm text-gray-600">
+                        {c.directManager || "-"}
                       </td>
                       <td className="px-4 py-3 text-sm font-mono">{c.contractNumber}</td>
                       <td className="px-4 py-3">

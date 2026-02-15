@@ -9,6 +9,7 @@ export const employees = sqliteTable("employees", {
   location: text("location"),
   department: text("department"),
   position: text("position"),
+  directManager: text("direct_manager"),
   socialSecurityNumber: text("social_security_number"),
   hireDate: text("hire_date").notNull(),
   status: text("status").notNull().default("active"), // active, inactive, terminated

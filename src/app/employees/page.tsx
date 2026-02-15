@@ -42,6 +42,9 @@ export default async function EmployeesPage() {
                     المنصب
                   </th>
                   <th className="text-right px-4 py-3 text-xs font-medium text-gray-500 uppercase">
+                    المدير المباشر
+                  </th>
+                  <th className="text-right px-4 py-3 text-xs font-medium text-gray-500 uppercase">
                     تاريخ التعيين
                   </th>
                   <th className="text-right px-4 py-3 text-xs font-medium text-gray-500 uppercase">
@@ -66,6 +69,9 @@ export default async function EmployeesPage() {
                     </td>
                     <td className="px-4 py-3 text-sm text-gray-600">
                       {emp.position || "-"}
+                    </td>
+                    <td className="px-4 py-3 text-sm text-gray-600">
+                      {emp.directManager || "-"}
                     </td>
                     <td className="px-4 py-3 text-sm text-gray-600">{emp.hireDate}</td>
                     <td className="px-4 py-3">

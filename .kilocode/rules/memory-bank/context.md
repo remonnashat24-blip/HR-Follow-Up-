@@ -21,6 +21,11 @@ The application is a full-featured Arabic RTL employee management system for tra
 - [x] ESLint passing
 - [x] Excel import functionality with new fields (location, socialSecurityNumber, contractSequence)
 - [x] Import page for uploading employee and contract data from Excel files
+- [x] Direct Manager field added to employees table and import
+- [x] Downloadable Excel template on import page
+- [x] Direct Manager column added to Employees page table
+- [x] Direct Manager column added to Contracts page table
+- [x] Direct Manager column added to Probation page table
 
 ## Current Structure
 

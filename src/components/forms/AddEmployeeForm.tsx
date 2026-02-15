@@ -18,6 +18,7 @@ export function AddEmployeeForm() {
       phone: (formData.get("phone") as string) || undefined,
       department: (formData.get("department") as string) || undefined,
       position: (formData.get("position") as string) || undefined,
+      directManager: (formData.get("directManager") as string) || undefined,
       hireDate: formData.get("hireDate") as string,
     });
     setLoading(false);
@@ -104,6 +105,14 @@ export function AddEmployeeForm() {
                 placeholder="مطور برمجيات"
               />
             </div>
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">المدير المباشر</label>
+            <input
+              name="directManager"
+              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-primary focus:border-transparent"
+              placeholder="اسم المدير المباشر"
+            />
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">

@@ -13,6 +13,51 @@ export default function ImportPage() {
   } | null>(null);
   const [fileName, setFileName] = useState("");
 
+  const downloadTemplate = () => {
+    // Create template data with sample headers
+    const templateData = [
+      {
+        "Employee Code": "EMP-001",
+        "Name": "أحمد محمد",
+        "Location": "الرياض",
+        "Department": "تقنية المعلومات",
+        "Job Title": "مطور برمجيات",
+        "Direct Manager": "خالد العمر",
+        "Employee Social Security Number": "1234567890",
+        "Date of Hiring": "2024-01-15",
+        "Contract Duration": 12,
+        "Contract Start Date": "2024-01-15",
+        "Contract End Date": "2025-01-15",
+        "Contract Sequence": 1,
+      },
+    ];
+
+    // Create workbook and worksheet
+    const workbook = XLSX.utils.book_new();
+    const worksheet = XLSX.utils.json_to_sheet(templateData);
+
+    // Set column widths
+    worksheet["!cols"] = [
+      { wch: 15 }, // Employee Code
+      { wch: 25 }, // Name
+      { wch: 15 }, // Location
+      { wch: 20 }, // Department
+      { wch: 20 }, // Job Title
+      { wch: 20 }, // Direct Manager
+      { wch: 25 }, // Employee Social Security Number
+      { wch: 15 }, // Date of Hiring
+      { wch: 15 }, // Contract Duration
+      { wch: 18 }, // Contract Start Date
+      { wch: 18 }, // Contract End Date
+      { wch: 15 }, // Contract Sequence
+    ];
+
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Employees");
+
+    // Download the file
+    XLSX.writeFile(workbook, "employee_template.xlsx");
+  };
+
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -34,6 +79,7 @@ export default function ImportPage() {
       // - Location (or الموقع)
       // - Department (or القسم)
       // - Job Title (or المسمى الوظيفي)
+      // - Direct Manager (or المدير المباشر)
       // - Employee Social Security Number (or رقم التأمين الاجتماعي)
       // - Date of Hiring (or تاريخ التعيين)
       // - Contract Duration (or مدة العقد)
@@ -49,6 +95,7 @@ export default function ImportPage() {
         location: String(row["Location"] || row["الموقع"] || row["location"] || ""),
         department: String(row["Department"] || row["القسم"] || row["department"] || ""),
         jobTitle: String(row["Job Title"] || row["المسمى الوظيفي"] || row["jobTitle"] || ""),
+        directManager: String(row["Direct Manager"] || row["المدير المباشر"] || row["directManager"] || ""),
         socialSecurityNumber: String(
           row["Employee Social Security Number"] ||
             row["رقم التأمين الاجتماعي"] ||
@@ -186,7 +233,16 @@ export default function ImportPage() {
 
       {/* Template Download */}
       <div className="mt-8 bg-gray-50 rounded-lg p-6">
-        <h3 className="font-semibold mb-3">قالب ملف Excel</h3>
+        <div className="flex items-center justify-between mb-3">
+          <h3 className="font-semibold text-lg">قالب ملف Excel</h3>
+          <button
+            onClick={downloadTemplate}
+            className="bg-green-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-green-700 transition-colors flex items-center gap-2"
+          >
+            <span>📥</span>
+            تحميل القالب
+          </button>
+        </div>
         <p className="text-sm text-gray-600 mb-3">
           استخدم القالب التالي لضمان صحة البيانات:
         </p>
@@ -223,6 +279,11 @@ export default function ImportPage() {
               <tr className="border-t">
                 <td className="px-4 py-2">Job Title / المسمى الوظيفي</td>
                 <td className="px-4 py-2">المنصب الوظيفي</td>
+                <td className="px-4 py-2 text-gray-400">اختياري</td>
+              </tr>
+              <tr className="border-t">
+                <td className="px-4 py-2">Direct Manager / المدير المباشر</td>
+                <td className="px-4 py-2">اسم المدير المباشر</td>
                 <td className="px-4 py-2 text-gray-400">اختياري</td>
               </tr>
               <tr className="border-t">
