@@ -4,6 +4,7 @@ import { StatusBadge } from "@/components/ui/StatusBadge";
 import { DeleteButton, DeleteAllButton } from "@/components/ui/DeleteButtons";
 import { deleteProbation, deleteAllProbations } from "@/app/actions";
 import { EvaluateProbationForm } from "@/components/forms/EvaluateProbationForm";
+import { useAuth } from "@/lib/auth-context";
 
 type Probation = {
   id: number;
@@ -20,6 +21,10 @@ type Probation = {
   evaluationNotes: string | null;
   evaluationDate: string | null;
   evaluatedBy: string | null;
+  taskPerformance: string | null;
+  taskCompletionRate: number | null;
+  departmentEvaluation: string | null;
+  supervisorEvaluation: string | null;
 };
 
 function getDaysRemaining(endDate: string): { days: number; label: string; color: string } {
@@ -33,19 +38,41 @@ function getDaysRemaining(endDate: string): { days: number; label: string; color
   return { days: diff, label: `${diff} يوم`, color: "text-green-600" };
 }
 
-export function ProbationTable({ probations }: { probations: Probation[] }) {
+export function ProbationTable({ 
+  probations, 
+  showDepartmentFilter = false 
+}: { 
+  probations: Probation[]; 
+  showDepartmentFilter?: boolean;
+}) {
+  const { isAdmin, permissions } = useAuth();
+  
+  // Filter probations based on user permissions (for non-admin users)
+  const filteredProbations = !isAdmin && permissions.department 
+    ? probations.filter(p => p.department === permissions.department)
+    : probations;
+
   return (
     <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
       <div className="flex items-center justify-between px-4 py-3 border-b border-gray-100">
-        <span className="text-sm text-gray-500">{probations.length} فترة اختبار</span>
-        <DeleteAllButton
-          onDeleteAll={async () => {
-            await deleteAllProbations();
-          }}
-          entityName="فترات الاختبار"
-        />
+        <div>
+          <span className="text-sm text-gray-500">{filteredProbations.length} فترة اختبار</span>
+          {!isAdmin && permissions.department && (
+            <span className="text-sm text-blue-600 mr-2">
+              (القسم: {permissions.department})
+            </span>
+          )}
+        </div>
+        {isAdmin && (
+          <DeleteAllButton
+            onDeleteAll={async () => {
+              await deleteAllProbations();
+            }}
+            entityName="فترات الاختبار"
+          />
+        )}
       </div>
-      {probations.length === 0 ? (
+      {filteredProbations.length === 0 ? (
         <div className="p-12 text-center">
           <p className="text-4xl mb-3">⏳</p>
           <p className="text-gray-500 text-lg">لا توجد فترات اختبار</p>
@@ -86,7 +113,7 @@ export function ProbationTable({ probations }: { probations: Probation[] }) {
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-200">
-              {probations.map((p) => {
+              {filteredProbations.map((p) => {
                 const remaining = p.status === "active" ? getDaysRemaining(p.endDate) : null;
                 return (
                   <tr key={p.id} className="hover:bg-gray-50 transition-colors">
@@ -119,21 +146,26 @@ export function ProbationTable({ probations }: { probations: Probation[] }) {
                     </td>
                     <td className="px-4 py-3">
                       <div className="flex gap-1 items-center">
-                        {p.status === "active" ? (
+                        {p.status === "active" && permissions.canEvaluateProbations && (
                           <EvaluateProbationForm
                             probationId={p.id}
                             employeeName={p.employeeName}
+                            department={p.department}
+                            directManager={p.directManager}
                           />
-                        ) : (
+                        )}
+                        {p.status !== "active" && (
                           <span className="text-xs text-gray-400">
                             {p.evaluatedBy && `بواسطة: ${p.evaluatedBy}`}
                           </span>
                         )}
-                        <DeleteButton
-                          onDelete={async () => {
-                            await deleteProbation(p.id);
-                          }}
-                        />
+                        {isAdmin && (
+                          <DeleteButton
+                            onDelete={async () => {
+                              await deleteProbation(p.id);
+                            }}
+                          />
+                        )}
                       </div>
                     </td>
                   </tr>

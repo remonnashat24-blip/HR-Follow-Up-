@@ -4,6 +4,7 @@ import { StatusBadge } from "@/components/ui/StatusBadge";
 import { DeleteButton, DeleteAllButton } from "@/components/ui/DeleteButtons";
 import { deleteContract, deleteAllContracts } from "@/app/actions";
 import { RenewContractForm } from "@/components/forms/RenewContractForm";
+import { useAuth } from "@/lib/auth-context";
 
 type Contract = {
   id: number;
@@ -35,18 +36,34 @@ function getDaysRemaining(endDate: string | null): { days: number; label: string
 }
 
 export function ContractTable({ contracts }: { contracts: Contract[] }) {
+  const { isAdmin, permissions } = useAuth();
+  
+  // Filter contracts based on user permissions (for non-admin users)
+  const filteredContracts = !isAdmin && permissions.department 
+    ? contracts.filter(c => c.department === permissions.department)
+    : contracts;
+
   return (
     <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
       <div className="flex items-center justify-between px-4 py-3 border-b border-gray-100">
-        <span className="text-sm text-gray-500">{contracts.length} عقد</span>
-        <DeleteAllButton
-          onDeleteAll={async () => {
-            await deleteAllContracts();
-          }}
-          entityName="العقود"
-        />
+        <div>
+          <span className="text-sm text-gray-500">{filteredContracts.length} عقد</span>
+          {!isAdmin && permissions.department && (
+            <span className="text-sm text-blue-600 mr-2">
+              (القسم: {permissions.department})
+            </span>
+          )}
+        </div>
+        {isAdmin && (
+          <DeleteAllButton
+            onDeleteAll={async () => {
+              await deleteAllContracts();
+            }}
+            entityName="العقود"
+          />
+        )}
       </div>
-      {contracts.length === 0 ? (
+      {filteredContracts.length === 0 ? (
         <div className="p-12 text-center">
           <p className="text-4xl mb-3">📄</p>
           <p className="text-gray-500 text-lg">لا توجد عقود بعد</p>
@@ -62,6 +79,9 @@ export function ContractTable({ contracts }: { contracts: Contract[] }) {
                 </th>
                 <th className="text-right px-4 py-3 text-xs font-medium text-gray-500 uppercase">
                   المدير المباشر
+                </th>
+                <th className="text-right px-4 py-3 text-xs font-medium text-gray-500 uppercase">
+                  القسم
                 </th>
                 <th className="text-right px-4 py-3 text-xs font-medium text-gray-500 uppercase">
                   رقم العقد
@@ -90,16 +110,19 @@ export function ContractTable({ contracts }: { contracts: Contract[] }) {
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-200">
-              {contracts.map((c) => {
+              {filteredContracts.map((c) => {
                 const remaining = c.status === "active" ? getDaysRemaining(c.endDate) : null;
                 return (
                   <tr key={c.id} className="hover:bg-gray-50 transition-colors">
                     <td className="px-4 py-3">
                       <p className="text-sm font-medium">{c.employeeName}</p>
-                      <p className="text-xs text-gray-500">{c.department}</p>
+                      <p className="text-xs text-gray-500">{c.employeeNumber}</p>
                     </td>
                     <td className="px-4 py-3 text-sm text-gray-600">
                       {c.directManager || "-"}
+                    </td>
+                    <td className="px-4 py-3 text-sm text-gray-600">
+                      {c.department || "-"}
                     </td>
                     <td className="px-4 py-3 text-sm font-mono">{c.contractNumber}</td>
                     <td className="px-4 py-3">
@@ -126,7 +149,7 @@ export function ContractTable({ contracts }: { contracts: Contract[] }) {
                     </td>
                     <td className="px-4 py-3">
                       <div className="flex gap-1 items-center">
-                        {c.status === "active" && c.contractType === "fixed" && (
+                        {c.status === "active" && c.contractType === "fixed" && permissions.canRenewContracts && (
                           <RenewContractForm
                             contractId={c.id}
                             employeeId={c.employeeId}
@@ -134,11 +157,13 @@ export function ContractTable({ contracts }: { contracts: Contract[] }) {
                             currentEndDate={c.endDate}
                           />
                         )}
-                        <DeleteButton
-                          onDelete={async () => {
-                            await deleteContract(c.id);
-                          }}
-                        />
+                        {isAdmin && (
+                          <DeleteButton
+                            onDelete={async () => {
+                              await deleteContract(c.id);
+                            }}
+                          />
+                        )}
                       </div>
                     </td>
                   </tr>

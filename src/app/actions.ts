@@ -1,8 +1,8 @@
 "use server";
 
 import { db } from "@/db";
-import { employees, probationPeriods, contracts } from "@/db/schema";
-import { eq } from "drizzle-orm";
+import { employees, probationPeriods, contracts, userPermissions } from "@/db/schema";
+import { eq, and } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 
 // ============ EMPLOYEES ============
@@ -69,6 +69,11 @@ export async function getProbationPeriods() {
       endDate: probationPeriods.endDate,
       durationMonths: probationPeriods.durationMonths,
       status: probationPeriods.status,
+      taskPerformance: probationPeriods.taskPerformance,
+      taskCompletionRate: probationPeriods.taskCompletionRate,
+      taskNotes: probationPeriods.taskNotes,
+      departmentEvaluation: probationPeriods.departmentEvaluation,
+      supervisorEvaluation: probationPeriods.supervisorEvaluation,
       evaluationNotes: probationPeriods.evaluationNotes,
       evaluationDate: probationPeriods.evaluationDate,
       evaluatedBy: probationPeriods.evaluatedBy,
@@ -93,6 +98,11 @@ export async function updateProbation(
   id: number,
   data: {
     status?: string;
+    taskPerformance?: string;
+    taskCompletionRate?: number;
+    taskNotes?: string;
+    departmentEvaluation?: string;
+    supervisorEvaluation?: string;
     evaluationNotes?: string;
     evaluationDate?: string;
     evaluatedBy?: string;
@@ -363,4 +373,112 @@ export async function importExcelData(rows: ImportRow[]) {
   revalidatePath("/");
 
   return results;
+}
+
+// ============ USER PERMISSIONS ============
+
+export async function getUserPermissions() {
+  return db.select().from(userPermissions).orderBy(userPermissions.userName);
+}
+
+export async function createUserPermission(data: {
+  userName: string;
+  department?: string;
+  canAddEmployees?: boolean;
+  canEditEmployees?: boolean;
+  canDeleteEmployees?: boolean;
+  canAddProbations?: boolean;
+  canEvaluateProbations?: boolean;
+  canDeleteProbations?: boolean;
+  canAddContracts?: boolean;
+  canRenewContracts?: boolean;
+  canDeleteContracts?: boolean;
+  canImportData?: boolean;
+}) {
+  await db.insert(userPermissions).values(data);
+  revalidatePath("/permissions");
+}
+
+export async function updateUserPermission(
+  id: number,
+  data: {
+    userName?: string;
+    department?: string;
+    canAddEmployees?: boolean;
+    canEditEmployees?: boolean;
+    canDeleteEmployees?: boolean;
+    canAddProbations?: boolean;
+    canEvaluateProbations?: boolean;
+    canDeleteProbations?: boolean;
+    canAddContracts?: boolean;
+    canRenewContracts?: boolean;
+    canDeleteContracts?: boolean;
+    canImportData?: boolean;
+  }
+) {
+  await db.update(userPermissions).set(data).where(eq(userPermissions.id, id));
+  revalidatePath("/permissions");
+}
+
+export async function deleteUserPermission(id: number) {
+  await db.delete(userPermissions).where(eq(userPermissions.id, id));
+  revalidatePath("/permissions");
+}
+
+// ============ GET EMPLOYEES BY DEPARTMENT (for user filtering) ============
+
+export async function getEmployeesByDepartment(department: string) {
+  return db
+    .select()
+    .from(employees)
+    .where(eq(employees.department, department))
+    .orderBy(employees.name);
+}
+
+export async function getProbationPeriodsByDepartment(department: string) {
+  return db
+    .select({
+      id: probationPeriods.id,
+      employeeId: probationPeriods.employeeId,
+      employeeName: employees.name,
+      employeeNumber: employees.employeeNumber,
+      department: employees.department,
+      position: employees.position,
+      directManager: employees.directManager,
+      startDate: probationPeriods.startDate,
+      endDate: probationPeriods.endDate,
+      durationMonths: probationPeriods.durationMonths,
+      status: probationPeriods.status,
+      evaluationNotes: probationPeriods.evaluationNotes,
+      evaluationDate: probationPeriods.evaluationDate,
+      evaluatedBy: probationPeriods.evaluatedBy,
+    })
+    .from(probationPeriods)
+    .leftJoin(employees, eq(probationPeriods.employeeId, employees.id))
+    .where(eq(employees.department, department))
+    .orderBy(probationPeriods.endDate);
+}
+
+export async function getContractsByDepartment(department: string) {
+  return db
+    .select({
+      id: contracts.id,
+      employeeId: contracts.employeeId,
+      employeeName: employees.name,
+      employeeNumber: employees.employeeNumber,
+      department: employees.department,
+      directManager: employees.directManager,
+      contractNumber: contracts.contractNumber,
+      contractType: contracts.contractType,
+      startDate: contracts.startDate,
+      endDate: contracts.endDate,
+      durationMonths: contracts.durationMonths,
+      salary: contracts.salary,
+      status: contracts.status,
+      renewalNotes: contracts.renewalNotes,
+    })
+    .from(contracts)
+    .leftJoin(employees, eq(contracts.employeeId, employees.id))
+    .where(eq(employees.department, department))
+    .orderBy(contracts.endDate);
 }

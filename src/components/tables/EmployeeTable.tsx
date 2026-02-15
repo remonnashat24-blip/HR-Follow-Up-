@@ -3,6 +3,7 @@
 import { StatusBadge } from "@/components/ui/StatusBadge";
 import { DeleteButton, DeleteAllButton } from "@/components/ui/DeleteButtons";
 import { deleteEmployee, deleteAllEmployees } from "@/app/actions";
+import { useAuth } from "@/lib/auth-context";
 
 type Employee = {
   id: number;
@@ -21,18 +22,34 @@ type Employee = {
 };
 
 export function EmployeeTable({ employees }: { employees: Employee[] }) {
+  const { isAdmin, permissions } = useAuth();
+  
+  // Filter employees based on user permissions (for non-admin users)
+  const filteredEmployees = !isAdmin && permissions.department 
+    ? employees.filter(e => e.department === permissions.department)
+    : employees;
+
   return (
     <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
       <div className="flex items-center justify-between px-4 py-3 border-b border-gray-100">
-        <span className="text-sm text-gray-500">{employees.length} موظف</span>
-        <DeleteAllButton
-          onDeleteAll={async () => {
-            await deleteAllEmployees();
-          }}
-          entityName="الموظفين"
-        />
+        <div>
+          <span className="text-sm text-gray-500">{filteredEmployees.length} موظف</span>
+          {!isAdmin && permissions.department && (
+            <span className="text-sm text-blue-600 mr-2">
+              (القسم: {permissions.department})
+            </span>
+          )}
+        </div>
+        {isAdmin && (
+          <DeleteAllButton
+            onDeleteAll={async () => {
+              await deleteAllEmployees();
+            }}
+            entityName="الموظفين"
+          />
+        )}
       </div>
-      {employees.length === 0 ? (
+      {filteredEmployees.length === 0 ? (
         <div className="p-12 text-center">
           <p className="text-4xl mb-3">👥</p>
           <p className="text-gray-500 text-lg">لا يوجد موظفين بعد</p>
@@ -72,7 +89,7 @@ export function EmployeeTable({ employees }: { employees: Employee[] }) {
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-200">
-              {employees.map((emp) => (
+              {filteredEmployees.map((emp) => (
                 <tr key={emp.id} className="hover:bg-gray-50 transition-colors">
                   <td className="px-4 py-3 text-sm font-mono">{emp.employeeNumber}</td>
                   <td className="px-4 py-3">
@@ -97,11 +114,13 @@ export function EmployeeTable({ employees }: { employees: Employee[] }) {
                     <StatusBadge status={emp.status} />
                   </td>
                   <td className="px-4 py-3">
-                    <DeleteButton
-                      onDelete={async () => {
-                        await deleteEmployee(emp.id);
-                      }}
-                    />
+                    {isAdmin && (
+                      <DeleteButton
+                        onDelete={async () => {
+                          await deleteEmployee(emp.id);
+                        }}
+                      />
+                    )}
                   </td>
                 </tr>
               ))}
