@@ -39,6 +39,7 @@ The application is a full-featured Arabic RTL employee management system for tra
 - [x] Separate admin and user views with role-based filtering
 - [x] Fixed auth context SSR issues - created providers.tsx client wrapper component
 - [x] Fixed client-side runtime errors with useSyncExternalStore and localStorage access
+- [x] Added collapsible sidebar with toggle button and improved navigation styling
 
 ## Current Structure
 
